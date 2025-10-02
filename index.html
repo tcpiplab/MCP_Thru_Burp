@@ -190,6 +190,26 @@
     .hidden {
       display: none;
     }
+
+    .custom-header-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .custom-header-row input {
+      flex: 1;
+    }
+
+    .remove-header-btn {
+      background: #a12929;
+      flex-shrink: 0;
+    }
+
+    .remove-header-btn:hover {
+      background: #c93838;
+    }
   </style>
 </head>
 <body>
@@ -206,6 +226,18 @@
       <div class="form-group">
         <label for="bearerToken">Bearer Token (optional)</label>
         <input type="text" id="bearerToken" placeholder="your_token_here" value="">
+      </div>
+
+      <div class="form-group">
+        <label>Custom Headers (optional)</label>
+        <div id="customHeadersContainer">
+          <div class="custom-header-row">
+            <input type="text" class="header-name" placeholder="Header-Name">
+            <input type="text" class="header-value" placeholder="Header-Value">
+            <button type="button" class="remove-header-btn" style="padding: 8px 12px; margin-left: 5px;">Remove</button>
+          </div>
+        </div>
+        <button type="button" id="addHeaderBtn" style="margin-top: 10px; padding: 8px 16px;">Add Header</button>
       </div>
 
       <div class="form-group">

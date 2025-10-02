@@ -2,6 +2,7 @@ class MCPClient {
   constructor() {
     this.serverUrl = '';
     this.bearerToken = '';
+    this.customHeaders = {};
     this.proxyHost = 'localhost';
     this.proxyPort = '8080';
     this.proxyEnabled = true;
@@ -69,7 +70,8 @@ class MCPClient {
       data: data,
       proxyUrl: proxyUrl,
       rejectUnauthorized: this.rejectUnauthorized,
-      bearerToken: this.bearerToken
+      bearerToken: this.bearerToken,
+      customHeaders: this.customHeaders
     };
 
     const logEntry = {
@@ -195,6 +197,7 @@ connectBtn.addEventListener('click', async () => {
     }
 
     client.bearerToken = bearerTokenInput.value.trim();
+    client.customHeaders = collectCustomHeaders();
     client.proxyEnabled = proxyEnabledCheckbox.checked;
     client.proxyHost = proxyHostInput.value;
     client.proxyPort = proxyPortInput.value;
@@ -246,6 +249,59 @@ clearLogBtn.addEventListener('click', () => {
   client.clearTrafficLog();
   updateTrafficLog();
   hideStatus(operationStatus);
+});
+
+const customHeadersContainer = document.getElementById('customHeadersContainer');
+const addHeaderBtn = document.getElementById('addHeaderBtn');
+
+function collectCustomHeaders() {
+  const headers = {};
+  const headerRows = customHeadersContainer.querySelectorAll('.custom-header-row');
+
+  headerRows.forEach(row => {
+    const nameInput = row.querySelector('.header-name');
+    const valueInput = row.querySelector('.header-value');
+    const name = nameInput.value.trim();
+    const value = valueInput.value.trim();
+
+    if (name && value) {
+      headers[name] = value;
+    }
+  });
+
+  return headers;
+}
+
+function addHeaderRow() {
+  const row = document.createElement('div');
+  row.className = 'custom-header-row';
+  row.innerHTML = `
+    <input type="text" class="header-name" placeholder="Header-Name">
+    <input type="text" class="header-value" placeholder="Header-Value">
+    <button type="button" class="remove-header-btn" style="padding: 8px 12px; margin-left: 5px;">Remove</button>
+  `;
+
+  const removeBtn = row.querySelector('.remove-header-btn');
+  removeBtn.addEventListener('click', () => {
+    if (customHeadersContainer.querySelectorAll('.custom-header-row').length > 1) {
+      row.remove();
+    }
+  });
+
+  customHeadersContainer.appendChild(row);
+}
+
+addHeaderBtn.addEventListener('click', () => {
+  addHeaderRow();
+});
+
+document.querySelectorAll('.remove-header-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const row = e.target.closest('.custom-header-row');
+    if (customHeadersContainer.querySelectorAll('.custom-header-row').length > 1) {
+      row.remove();
+    }
+  });
 });
 
 console.log('MCP Client ready');
