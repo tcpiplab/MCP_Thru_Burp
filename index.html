@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP Proxy Client</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #569cd6;
+    }
+
+    .section {
+      background: #252526;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .section h2 {
+      color: #4ec9b0;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #9cdcfe;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      background: #3c3c3c;
+      border: 1px solid #3e3e42;
+      border-radius: 3px;
+      color: #d4d4d4;
+      font-size: 14px;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #007acc;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .proxy-settings {
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 10px;
+      align-items: end;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #0e639c;
+      border: none;
+      border-radius: 3px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #1177bb;
+    }
+
+    button:disabled {
+      background: #3e3e42;
+      cursor: not-allowed;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .status {
+      padding: 10px;
+      border-radius: 3px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .status.success {
+      background: #1e3a1e;
+      border: 1px solid #2ea043;
+      color: #2ea043;
+    }
+
+    .status.error {
+      background: #3a1e1e;
+      border: 1px solid #f85149;
+      color: #f85149;
+    }
+
+    .status.info {
+      background: #1e2a3a;
+      border: 1px solid #58a6ff;
+      color: #58a6ff;
+    }
+
+    .log-container {
+      background: #1e1e1e;
+      border: 1px solid #3e3e42;
+      border-radius: 3px;
+      padding: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .log-entry {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #3e3e42;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-timestamp {
+      color: #6a9955;
+      font-weight: bold;
+    }
+
+    .log-request {
+      color: #569cd6;
+      margin-top: 5px;
+    }
+
+    .log-response {
+      color: #4ec9b0;
+      margin-top: 5px;
+    }
+
+    .log-error {
+      color: #f85149;
+      margin-top: 5px;
+    }
+
+    pre {
+      margin: 5px 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MCP Proxy Client</h1>
+
+    <div class="section">
+      <h2>Connection Settings</h2>
+      <div class="form-group">
+        <label for="serverUrl">MCP Server URL</label>
+        <input type="text" id="serverUrl" placeholder="https://mcp-server.example.com/mcp" value="">
+      </div>
+
+      <div class="form-group">
+        <label>Proxy Configuration</label>
+        <div class="checkbox-group">
+          <input type="checkbox" id="proxyEnabled" checked>
+          <label for="proxyEnabled" style="margin-bottom: 0;">Enable Proxy</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="checkbox-group">
+          <input type="checkbox" id="rejectUnauthorized" checked>
+          <label for="rejectUnauthorized" style="margin-bottom: 0;">Ignore TLS Certificate Errors</label>
+        </div>
+      </div>
+
+      <div class="proxy-settings">
+        <div class="form-group">
+          <label for="proxyHost">Proxy Host</label>
+          <input type="text" id="proxyHost" value="localhost">
+        </div>
+        <div class="form-group">
+          <label for="proxyPort">Proxy Port</label>
+          <input type="number" id="proxyPort" value="8080">
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button id="testProxyBtn">Test Proxy Connection</button>
+        <button id="connectBtn">Connect to MCP Server</button>
+      </div>
+
+      <div id="connectionStatus" class="hidden"></div>
+    </div>
+
+    <div class="section">
+      <h2>MCP Operations</h2>
+      <div class="button-group">
+        <button id="listToolsBtn" disabled>List Available Tools</button>
+        <button id="clearLogBtn">Clear Log</button>
+      </div>
+      <div id="operationStatus" class="hidden"></div>
+    </div>
+
+    <div class="section">
+      <h2>Traffic Log</h2>
+      <div id="trafficLog" class="log-container">
+        <div style="color: #6a9955;">Waiting for requests...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
