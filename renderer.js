@@ -59,6 +59,95 @@ class MCPClient {
     return await this.sendMCPRequest(request);
   }
 
+  async listPrompts() {
+    const request = {
+      jsonrpc: "2.0",
+      id: this.requestId++,
+      method: "prompts/list",
+      params: {}
+    };
+
+    return await this.sendMCPRequest(request);
+  }
+
+  async getPrompt(name, args) {
+    const request = {
+      jsonrpc: "2.0",
+      id: this.requestId++,
+      method: "prompts/get",
+      params: {
+        name: name,
+        arguments: args || {}
+      }
+    };
+
+    return await this.sendMCPRequest(request);
+  }
+
+  async listResources() {
+    const request = {
+      jsonrpc: "2.0",
+      id: this.requestId++,
+      method: "resources/list",
+      params: {}
+    };
+
+    return await this.sendMCPRequest(request);
+  }
+
+  async readResource(uri) {
+    const request = {
+      jsonrpc: "2.0",
+      id: this.requestId++,
+      method: "resources/read",
+      params: {
+        uri: uri
+      }
+    };
+
+    return await this.sendMCPRequest(request);
+  }
+
+  async subscribeResource(uri) {
+    const request = {
+      jsonrpc: "2.0",
+      id: this.requestId++,
+      method: "resources/subscribe",
+      params: {
+        uri: uri
+      }
+    };
+
+    return await this.sendMCPRequest(request);
+  }
+
+  async complete(ref, argument) {
+    const request = {
+      jsonrpc: "2.0",
+      id: this.requestId++,
+      method: "completion/complete",
+      params: {
+        ref: ref,
+        argument: argument
+      }
+    };
+
+    return await this.sendMCPRequest(request);
+  }
+
+  async setLoggingLevel(level) {
+    const request = {
+      jsonrpc: "2.0",
+      id: this.requestId++,
+      method: "logging/setLevel",
+      params: {
+        level: level
+      }
+    };
+
+    return await this.sendMCPRequest(request);
+  }
+
   async sendMCPRequest(data) {
     const proxyUrl = this.proxyEnabled
       ? `http://${this.proxyHost}:${this.proxyPort}`
@@ -113,6 +202,11 @@ const proxyPortInput = document.getElementById('proxyPort');
 const testProxyBtn = document.getElementById('testProxyBtn');
 const connectBtn = document.getElementById('connectBtn');
 const listToolsBtn = document.getElementById('listToolsBtn');
+const listPromptsBtn = document.getElementById('listPromptsBtn');
+const listResourcesBtn = document.getElementById('listResourcesBtn');
+const getPromptBtn = document.getElementById('getPromptBtn');
+const readResourceBtn = document.getElementById('readResourceBtn');
+const setLoggingBtn = document.getElementById('setLoggingBtn');
 const clearLogBtn = document.getElementById('clearLogBtn');
 const connectionStatus = document.getElementById('connectionStatus');
 const operationStatus = document.getElementById('operationStatus');
@@ -126,6 +220,66 @@ function showStatus(element, message, type) {
 
 function hideStatus(element) {
   element.classList.add('hidden');
+}
+
+function showModal(title, fields, onSubmit) {
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+
+  let fieldsHtml = '';
+  fields.forEach(field => {
+    if (field.type === 'textarea') {
+      fieldsHtml += `
+        <div class="form-group">
+          <label for="modal-${field.id}">${field.label}</label>
+          <textarea id="modal-${field.id}" placeholder="${field.placeholder || ''}"></textarea>
+        </div>
+      `;
+    } else {
+      fieldsHtml += `
+        <div class="form-group">
+          <label for="modal-${field.id}">${field.label}</label>
+          <input type="${field.type}" id="modal-${field.id}" placeholder="${field.placeholder || ''}">
+        </div>
+      `;
+    }
+  });
+
+  modal.innerHTML = `
+    <div class="modal-content">
+      <h3>${title}</h3>
+      ${fieldsHtml}
+      <div class="modal-buttons">
+        <button id="modal-cancel">Cancel</button>
+        <button id="modal-submit">Submit</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const cancelBtn = modal.querySelector('#modal-cancel');
+  const submitBtn = modal.querySelector('#modal-submit');
+
+  cancelBtn.addEventListener('click', () => {
+    document.body.removeChild(modal);
+  });
+
+  submitBtn.addEventListener('click', () => {
+    const values = {};
+    fields.forEach(field => {
+      const input = modal.querySelector(`#modal-${field.id}`);
+      values[field.id] = input.value;
+    });
+    document.body.removeChild(modal);
+    onSubmit(values);
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      document.body.removeChild(modal);
+    }
+  });
 }
 
 function updateTrafficLog() {
@@ -212,6 +366,11 @@ connectBtn.addEventListener('click', async () => {
       client.connected = true;
       showStatus(connectionStatus, 'Connected to MCP server successfully!', 'success');
       listToolsBtn.disabled = false;
+      listPromptsBtn.disabled = false;
+      listResourcesBtn.disabled = false;
+      getPromptBtn.disabled = false;
+      readResourceBtn.disabled = false;
+      setLoggingBtn.disabled = false;
     } else {
       showStatus(connectionStatus, `Connection failed: ${result.error}`, 'error');
     }
@@ -243,6 +402,159 @@ listToolsBtn.addEventListener('click', async () => {
   } finally {
     listToolsBtn.disabled = false;
   }
+});
+
+listPromptsBtn.addEventListener('click', async () => {
+  listPromptsBtn.disabled = true;
+  hideStatus(operationStatus);
+
+  try {
+    showStatus(operationStatus, 'Fetching available prompts...', 'info');
+
+    const result = await client.listPrompts();
+    updateTrafficLog();
+
+    if (result.success) {
+      const promptCount = result.data.result?.prompts?.length || 0;
+      showStatus(operationStatus, `Found ${promptCount} available prompt(s). Check the log for details.`, 'success');
+    } else {
+      showStatus(operationStatus, `Failed to list prompts: ${result.error}`, 'error');
+    }
+  } catch (error) {
+    showStatus(operationStatus, `Error listing prompts: ${error.message}`, 'error');
+  } finally {
+    listPromptsBtn.disabled = false;
+  }
+});
+
+listResourcesBtn.addEventListener('click', async () => {
+  listResourcesBtn.disabled = true;
+  hideStatus(operationStatus);
+
+  try {
+    showStatus(operationStatus, 'Fetching available resources...', 'info');
+
+    const result = await client.listResources();
+    updateTrafficLog();
+
+    if (result.success) {
+      const resourceCount = result.data.result?.resources?.length || 0;
+      showStatus(operationStatus, `Found ${resourceCount} available resource(s). Check the log for details.`, 'success');
+    } else {
+      showStatus(operationStatus, `Failed to list resources: ${result.error}`, 'error');
+    }
+  } catch (error) {
+    showStatus(operationStatus, `Error listing resources: ${error.message}`, 'error');
+  } finally {
+    listResourcesBtn.disabled = false;
+  }
+});
+
+getPromptBtn.addEventListener('click', () => {
+  showModal('Get Prompt', [
+    { label: 'Prompt Name', id: 'promptName', type: 'text', placeholder: 'Enter prompt name' },
+    { label: 'Arguments (JSON)', id: 'promptArgs', type: 'textarea', placeholder: '{}' }
+  ], async (values) => {
+    const promptName = values.promptName.trim();
+    if (!promptName) {
+      showStatus(operationStatus, 'Prompt name is required', 'error');
+      return;
+    }
+
+    let args = {};
+    if (values.promptArgs.trim()) {
+      try {
+        args = JSON.parse(values.promptArgs);
+      } catch (e) {
+        showStatus(operationStatus, 'Invalid JSON for arguments', 'error');
+        return;
+      }
+    }
+
+    getPromptBtn.disabled = true;
+    hideStatus(operationStatus);
+
+    try {
+      showStatus(operationStatus, `Getting prompt "${promptName}"...`, 'info');
+
+      const result = await client.getPrompt(promptName, args);
+      updateTrafficLog();
+
+      if (result.success) {
+        showStatus(operationStatus, `Successfully retrieved prompt "${promptName}". Check the log for details.`, 'success');
+      } else {
+        showStatus(operationStatus, `Failed to get prompt: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      showStatus(operationStatus, `Error getting prompt: ${error.message}`, 'error');
+    } finally {
+      getPromptBtn.disabled = false;
+    }
+  });
+});
+
+readResourceBtn.addEventListener('click', async () => {
+  showModal('Read Resource', [
+    { id: 'uri', label: 'Resource URI', type: 'text', placeholder: 'file:///path/to/resource' }
+  ], async (values) => {
+    const uri = values.uri;
+    if (!uri) return;
+
+    readResourceBtn.disabled = true;
+    hideStatus(operationStatus);
+
+    try {
+      showStatus(operationStatus, `Reading resource "${uri}"...`, 'info');
+
+      const result = await client.readResource(uri);
+      updateTrafficLog();
+
+      if (result.success) {
+        showStatus(operationStatus, `Successfully read resource "${uri}". Check the log for details.`, 'success');
+      } else {
+        showStatus(operationStatus, `Failed to read resource: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      showStatus(operationStatus, `Error reading resource: ${error.message}`, 'error');
+    } finally {
+      readResourceBtn.disabled = false;
+    }
+  });
+});
+
+setLoggingBtn.addEventListener('click', async () => {
+  showModal('Set Logging Level', [
+    { id: 'level', label: 'Logging Level', type: 'text', placeholder: 'debug, info, notice, warning, error, critical, alert, emergency' }
+  ], async (values) => {
+    const level = values.level.trim();
+    if (!level) return;
+
+    const validLevels = ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'];
+    if (!validLevels.includes(level.toLowerCase())) {
+      showStatus(operationStatus, 'Invalid logging level', 'error');
+      return;
+    }
+
+    setLoggingBtn.disabled = true;
+    hideStatus(operationStatus);
+
+    try {
+      showStatus(operationStatus, `Setting logging level to "${level}"...`, 'info');
+
+      const result = await client.setLoggingLevel(level.toLowerCase());
+      updateTrafficLog();
+
+      if (result.success) {
+        showStatus(operationStatus, `Successfully set logging level to "${level}".`, 'success');
+      } else {
+        showStatus(operationStatus, `Failed to set logging level: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      showStatus(operationStatus, `Error setting logging level: ${error.message}`, 'error');
+    } finally {
+      setLoggingBtn.disabled = false;
+    }
+  });
 });
 
 clearLogBtn.addEventListener('click', () => {
