@@ -31,18 +31,24 @@ app.on('activate', () => {
 });
 
 ipcMain.handle('mcp-request', async (event, config) => {
-  const { url, method, data, proxyUrl, rejectUnauthorized } = config;
+  const { url, method, data, proxyUrl, rejectUnauthorized, bearerToken } = config;
 
-  console.log('MCP Request config:', { url, proxyUrl, rejectUnauthorized });
+  console.log('MCP Request config:', { url, proxyUrl, rejectUnauthorized, hasBearerToken: !!bearerToken });
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json, text/event-stream'
+  };
+
+  if (bearerToken) {
+    headers['Authorization'] = `Bearer ${bearerToken}`;
+  }
 
   const axiosConfig = {
     method,
     url,
     data,
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
+    headers: headers,
     timeout: 30000
   };
 

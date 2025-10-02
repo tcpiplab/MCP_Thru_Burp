@@ -1,6 +1,7 @@
 class MCPClient {
   constructor() {
     this.serverUrl = '';
+    this.bearerToken = '';
     this.proxyHost = 'localhost';
     this.proxyPort = '8080';
     this.proxyEnabled = true;
@@ -67,7 +68,8 @@ class MCPClient {
       method: 'POST',
       data: data,
       proxyUrl: proxyUrl,
-      rejectUnauthorized: this.rejectUnauthorized
+      rejectUnauthorized: this.rejectUnauthorized,
+      bearerToken: this.bearerToken
     };
 
     const logEntry = {
@@ -101,6 +103,7 @@ class MCPClient {
 const client = new MCPClient();
 
 const serverUrlInput = document.getElementById('serverUrl');
+const bearerTokenInput = document.getElementById('bearerToken');
 const proxyEnabledCheckbox = document.getElementById('proxyEnabled');
 const rejectUnauthorizedCheckbox = document.getElementById('rejectUnauthorized');
 const proxyHostInput = document.getElementById('proxyHost');
@@ -191,6 +194,7 @@ connectBtn.addEventListener('click', async () => {
       return;
     }
 
+    client.bearerToken = bearerTokenInput.value.trim();
     client.proxyEnabled = proxyEnabledCheckbox.checked;
     client.proxyHost = proxyHostInput.value;
     client.proxyPort = proxyPortInput.value;
