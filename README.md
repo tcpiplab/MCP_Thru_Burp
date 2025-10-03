@@ -2,11 +2,7 @@
 
 A desktop application that routes Model Context Protocol (MCP) traffic through Burp Suite for security testing and analysis. This tool acts as an MCP client that proxies all requests through Burp Suite, allowing you to inspect, modify, and test MCP server communications.
 
-![](/Users/lukesheppard/Desktop/Screenshot 2025-10-03 at 16.11.30.png)
 
-![](/Users/lukesheppard/Desktop/Screenshot 2025-10-03 at 16.15.33.png)
-
-![](/Users/lukesheppard/Desktop/Screenshot 2025-10-03 at 16.23.08.png)
 
 ## Features
 
