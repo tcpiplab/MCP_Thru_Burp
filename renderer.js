@@ -202,6 +202,7 @@ const proxyPortInput = document.getElementById('proxyPort');
 const testProxyBtn = document.getElementById('testProxyBtn');
 const connectBtn = document.getElementById('connectBtn');
 const listToolsBtn = document.getElementById('listToolsBtn');
+const callToolBtn = document.getElementById('callToolBtn');
 const listPromptsBtn = document.getElementById('listPromptsBtn');
 const listResourcesBtn = document.getElementById('listResourcesBtn');
 const getPromptBtn = document.getElementById('getPromptBtn');
@@ -366,6 +367,7 @@ connectBtn.addEventListener('click', async () => {
       client.connected = true;
       showStatus(connectionStatus, 'Connected to MCP server successfully!', 'success');
       listToolsBtn.disabled = false;
+      callToolBtn.disabled = false;
       listPromptsBtn.disabled = false;
       listResourcesBtn.disabled = false;
       getPromptBtn.disabled = false;
@@ -402,6 +404,49 @@ listToolsBtn.addEventListener('click', async () => {
   } finally {
     listToolsBtn.disabled = false;
   }
+});
+
+callToolBtn.addEventListener('click', () => {
+  showModal('Call Tool', [
+    { id: 'toolName', label: 'Tool Name', type: 'text', placeholder: 'Enter tool name' },
+    { id: 'toolArgs', label: 'Arguments (JSON, optional)', type: 'textarea', placeholder: '{}' }
+  ], async (values) => {
+    const toolName = values.toolName.trim();
+    if (!toolName) {
+      showStatus(operationStatus, 'Tool name is required', 'error');
+      return;
+    }
+
+    let args = {};
+    if (values.toolArgs.trim()) {
+      try {
+        args = JSON.parse(values.toolArgs);
+      } catch (e) {
+        showStatus(operationStatus, 'Invalid JSON for arguments', 'error');
+        return;
+      }
+    }
+
+    callToolBtn.disabled = true;
+    hideStatus(operationStatus);
+
+    try {
+      showStatus(operationStatus, `Calling tool "${toolName}"...`, 'info');
+
+      const result = await client.callTool(toolName, args);
+      updateTrafficLog();
+
+      if (result.success) {
+        showStatus(operationStatus, `Successfully called tool "${toolName}". Check the log for details.`, 'success');
+      } else {
+        showStatus(operationStatus, `Failed to call tool: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      showStatus(operationStatus, `Error calling tool: ${error.message}`, 'error');
+    } finally {
+      callToolBtn.disabled = false;
+    }
+  });
 });
 
 listPromptsBtn.addEventListener('click', async () => {
