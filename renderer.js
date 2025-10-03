@@ -25,7 +25,7 @@ class MCPClient {
           tools: {}
         },
         clientInfo: {
-          name: "mcp-proxy-client",
+          name: "mcp-thru-burp",
           version: "1.0.0"
         }
       }

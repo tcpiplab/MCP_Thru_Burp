@@ -1,7 +1,7 @@
 {
-  "name": "mcp-proxy-client",
+  "name": "mcp-thru-burp",
   "version": "1.0.0",
-  "description": "MCP Client with Proxy Support for Security Testing",
+  "description": "MCP Client with Burp Suite Integration for Security Testing",
   "main": "main.js",
   "directories": {
     "doc": "docs"
@@ -24,8 +24,8 @@
     "https-proxy-agent": "^7.0.6"
   },
   "build": {
-    "appId": "com.mcpclient.app",
-    "productName": "MCP Proxy Client",
+    "appId": "com.mcpthruburp.app",
+    "productName": "MCP Thru Burp",
     "directories": {
       "output": "dist"
     },
